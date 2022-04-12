@@ -5,7 +5,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import java.awt.event.*;
+import java.io.Console;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.awt.*;
 import nodes.Node;
@@ -14,6 +17,34 @@ import bfs.BFS;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+class Pair {
+ 
+    // Pair attributes
+    public int x;
+    public int y;
+ 
+    // Constructor to initialize pair
+    public Pair(int x, int y)
+    {
+        // This keyword refers to current instance
+        this.x = x;
+        this.y = y;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Pair){
+            return (this.x == ((Pair) obj).x && this.y == ((Pair) obj).y) || (this.x == ((Pair) obj).y && this.y == ((Pair) obj).x);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.x * this.y;
+    }
+}
 
 public class App {
     static double prob = Integer.MAX_VALUE;
@@ -44,7 +75,7 @@ public class App {
 
         final JLabel labelProbability = new JLabel("probability to connect");
         final JLabel probabilitySliderValue = new JLabel("0%");
-        final JSlider probabilitySlider = new JSlider(JSlider.HORIZONTAL, 0, Integer.MAX_VALUE / 100, 0);
+        final JSlider probabilitySlider = new JSlider(JSlider.HORIZONTAL, 0, Integer.MAX_VALUE, 0);
         probabilitySlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -112,20 +143,29 @@ public class App {
                     .connectedTo(new ArrayList<Node>()).build());
 
         }
+
+        double probSliderValue = probabilitySlider.getValue() / App.prob;
         for (int i = 0; i < list.size(); i++) {
             for (int j = i + 1; j < list.size(); j++) {
 
                 Random r = new java.util.Random();
-                double prob = r.nextDouble() * App.prob;
-                if (prob <= probabilitySlider.getValue()) {
-
+                double prob = r.nextDouble();
+                if (prob <= probSliderValue) {
                     list.get(i).getConnectedTo().add(list.get(j));
                     list.get(j).getConnectedTo().add(list.get(i));
-
                 }
-
             }
+        }
+        HashSet<Pair> connections = new HashSet<>();
+        System.out.println(list.size());
+        for(Node node : list){
+            for(Node connected : node.getConnectedTo()){
+                connections.add(new Pair(node.getID(), connected.getID()));
+            }
+        }
 
+        for(Pair p : connections){
+            System.out.println(p.x + " " + p.y);
         }
 
         for (Node node : list) {
