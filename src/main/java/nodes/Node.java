@@ -13,7 +13,7 @@ import lombok.Setter;
 public class Node implements Comparable<Node> {
     Integer ID;
     List<Node> connectedTo = new ArrayList<>();
-    Integer degree;
+
     int x;
     int y;
 

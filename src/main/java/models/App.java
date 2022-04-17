@@ -5,27 +5,199 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import java.awt.event.*;
+import java.io.FileOutputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.awt.*;
 import nodes.Node;
 import bfs.BFS;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
+
+class Pair {
+
+    // Pair attributes
+    public Number x;
+    public Number y;
+
+    // Constructor to initialize pair
+    public Pair(Number x, Number y) {
+        // This keyword refers to current instance
+        this.x = x;
+        this.y = y;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Pair) {
+            return (this.x == ((Pair) obj).x && this.y == ((Pair) obj).y)
+                    || (this.x == ((Pair) obj).y && this.y == ((Pair) obj).x);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.x.intValue() * this.y.intValue();
+    }
+}
 
 public class App {
     static double prob = Integer.MAX_VALUE;
     static int maxNumberOfConnections = 2;
+    final static DecimalFormat df = new DecimalFormat("0.0000");
 
     public static void main(String[] args) {
         final Canvas canvas = new Canvas();
         canvas.setSize(1000, 800);
         final JFrame frame = new JFrame("Modelo Erdős–Rényi");
+        // ---
+        JMenuBar menuBar;
+        JMenu menu;
+        JMenuItem menuItem1;
+        JMenuItem menuItem2;
+        JMenuItem menuItem12;
+
+        JMenuItem menuItem3;
+        JMenuItem menuItem4;
+
+        // Create the menu bar.
+        menuBar = new JMenuBar();
+
+        // Build the first menu.
+        menu = new JMenu("Erdős–Rényi");
+        menu.setMnemonic(KeyEvent.VK_A);
+        menuBar.add(menu);
+        // a group of JMenuItems
+        menuItem1 = new JMenuItem("Generating n = 2000, p = 0.0001",
+                KeyEvent.VK_T);
+        menuItem1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                FileOutputStream fos;
+                try {
+
+                    fos = new FileOutputStream("random1.txt", false);
+                    List<Node> list = erdosrenyi(2000, 0.0001);
+                    String out = writeConnections(2000, list);
+                    JOptionPane.showMessageDialog(null,
+                            "The Giant Component size of the generated graph is " + getGiantComponentList(list).size(),
+                            "GiantComponent", JOptionPane.PLAIN_MESSAGE);
+                    fos.write(out.getBytes()); // writes bytes into file
+                    fos.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+        menu.add(menuItem1);
+
+        menuItem2 = new JMenuItem("Generating n = 2000, p = 0.005",
+                KeyEvent.VK_T);
+        menuItem2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                FileOutputStream fos;
+                try {
+
+                    fos = new FileOutputStream("random2.txt", false);
+                    List<Node> list = erdosrenyi(2000, 0.005);
+                    String out = writeConnections(2000, list);
+                    JOptionPane.showMessageDialog(null,
+                            "The Giant Component size of the generated graph is " + getGiantComponentList(list).size(),
+                            "GiantComponent", JOptionPane.PLAIN_MESSAGE);
+                    fos.write(out.getBytes()); // writes bytes into file
+                    fos.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        menu.add(menuItem2);
+
+        menuItem12 = new JMenuItem("Plot giant component",
+                KeyEvent.VK_T);
+        menuItem12.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                final Map<Double, Integer> map = getGiantComponentPoints();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        SimplePlotMain.createAndShowGUI(new Function() {
+                            @Override
+                            public double compute(double argument) {
+                                double d = Double.parseDouble(df.format(argument).replaceAll(",", "."));
+                                System.out.println(d);
+
+                                Integer value = map.get(d);
+                                if (value != null) {
+                                    return value;
+                                }
+
+                                return 0;
+
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        menu.add(menuItem12);
+
+        // --
+
+        // Build second menu in the menu bar.
+        menu = new JMenu("Barabási-Albert");
+        menu.setMnemonic(KeyEvent.VK_N);
+        menu.getAccessibleContext().setAccessibleDescription(
+                "This menu does nothing");
+        menuBar.add(menu);
+        // a group of JMenuItems
+        menuItem3 = new JMenuItem("Generating n = 2000, m0 = 3, m = 1",
+                KeyEvent.VK_T);
+        menuItem3.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                FileOutputStream fos;
+                try {
+                    fos = new FileOutputStream("ba1.txt", false);
+                    fos.write(writeConnections(2000, barabasi(2000, 3, 1)).getBytes()); // writes bytes into file
+                    fos.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+        menu.add(menuItem3);
+
+        menuItem4 = new JMenuItem("Generating n = 2000, m0 = 5, m = 2 ",
+                KeyEvent.VK_T);
+        menuItem4.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                FileOutputStream fos;
+                try {
+                    fos = new FileOutputStream("ba2.txt", false);
+                    fos.write(writeConnections(2000, barabasi(2000, 5, 2)).getBytes()); // writes bytes into file
+                    fos.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+        menu.add(menuItem4);
+        // --
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1050, 850);
-
+        frame.setJMenuBar(menuBar);
         final JPanel panel1 = new JPanel();
         final JLabel labelNodes = new JLabel("number of nodes");
         final JLabel nodesSliderValue = new JLabel("10");
@@ -44,7 +216,7 @@ public class App {
 
         final JLabel labelProbability = new JLabel("probability to connect");
         final JLabel probabilitySliderValue = new JLabel("0%");
-        final JSlider probabilitySlider = new JSlider(JSlider.HORIZONTAL, 0, Integer.MAX_VALUE / 100, 0);
+        final JSlider probabilitySlider = new JSlider(JSlider.HORIZONTAL, 0, Integer.MAX_VALUE, 0);
         probabilitySlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -83,7 +255,7 @@ public class App {
         drawBarabasi.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                barabasi(canvas, nodesSlider, probabilitySlider);
+                barabasi(canvas, 100, 3, 2);
             }
         });
         // Adding Components to the frame.
@@ -99,6 +271,41 @@ public class App {
 
     }
 
+    public static String writeConnections(int n, List<Node> list) {
+        System.out.println("start writeConnections:" + n);
+
+        String out = n + "\n";
+        HashSet<Pair> connections = new HashSet<>();
+        for (Node node : list) {
+            for (Node connected : node.getConnectedTo()) {
+                connections.add(new Pair(node.getID(), connected.getID()));
+            }
+        }
+        System.out.println("middle writeConnections\nconnections size" + connections.size());
+
+        for (Pair p : connections) {
+            out += (p.x + " " + p.y + "\n");
+        }
+
+        System.out.println("end writeConnections:" + n);
+
+        return out;
+    }
+
+    public static Set<Node> getGiantComponentList(List<Node> list) {
+        List<Set<Node>> setList = BFS.doBFS(list);
+        Set<Node> giantComponent = null;
+        int max = -1;
+        for (Set<Node> set : setList) {
+            if (max < set.size()) {
+                giantComponent = set;
+                max = set.size();
+            }
+        }
+
+        return giantComponent;
+    }
+
     public static void erdosrenyi(Canvas canvas, JSlider nodesSlider, JSlider probabilitySlider) {
 
         Graphics g = canvas.getGraphics();
@@ -112,12 +319,13 @@ public class App {
                     .connectedTo(new ArrayList<Node>()).build());
 
         }
+        double probSliderValue = probabilitySlider.getValue() / App.prob;
         for (int i = 0; i < list.size(); i++) {
             for (int j = i + 1; j < list.size(); j++) {
 
                 Random r = new java.util.Random();
-                double prob = r.nextDouble() * App.prob;
-                if (prob <= probabilitySlider.getValue()) {
+                double prob = r.nextDouble();
+                if (prob <= probSliderValue) {
 
                     list.get(i).getConnectedTo().add(list.get(j));
                     list.get(j).getConnectedTo().add(list.get(i));
@@ -146,17 +354,27 @@ public class App {
                         connectedToNode.getY());
             }
         }
-        List<Set<Node>> setList = BFS.doBFS(list);
-        Set<Node> giantComponent = null;
-        int max = -1;
-        for (Set<Node> set : setList) {
-            if (max < set.size()) {
-                giantComponent = set;
-                max = set.size();
+        for (Node node : list) {
+            g.setColor(new Color(
+                    (int) Math.random() * 255,
+                    (int) Math.random() * 100,
+                    (int) Math.random() * 100));
+            g.drawArc(
+                    node.getX(),
+                    node.getY(),
+                    20, 20, 0, 360);
+
+            g.drawString(node.getID() + "", node.getX(), node.getY());
+            for (Node connectedToNode : node.getConnectedTo()) {
+                g.drawLine(node.getX(),
+                        node.getY(),
+                        connectedToNode.getX(),
+                        connectedToNode.getY());
             }
         }
+        Set<Node> giantComponent = getGiantComponentList(list);
 
-        if (max > 0) {
+        if (giantComponent.size() > 0) {
 
             Iterator<Node> itr = giantComponent.iterator();
             while (itr.hasNext()) {
@@ -165,49 +383,66 @@ public class App {
                 g.fillArc(
                         nnn.getX(),
                         nnn.getY(),
-                        5, 5, 0, 360);
+                        20, 20, 0, 360);
             }
 
         }
     }
 
-    public static void barabasi(Canvas canvas, JSlider nodesSlider, JSlider probabilitySlider) {
+    public static List<Node> erdosrenyi(int n, double p) {
+        System.out.println("end erdosrenyi:" + n);
+        List<Node> list = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            list.add(Node.builder()
+                    .ID(i)
+                    .connectedTo(new ArrayList<Node>()).build());
+
+        }
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = i + 1; j < list.size(); j++) {
+                Random r = new java.util.Random();
+                double prob = r.nextDouble();
+                if (prob <= p) {
+                    list.get(i).getConnectedTo().add(list.get(j));
+                    list.get(j).getConnectedTo().add(list.get(i));
+                }
+            }
+        }
+        System.out.println("end erdosrenyi:" + n);
+        return list;
+    }
+
+    public static Map<Double, Integer> getGiantComponentPoints() {
+        Map<Double, Integer> pointsMap = new TreeMap<>();
+        for (double p = 0.0001; p <= 0.005; p += 0.0001) {
+            double d = Double.parseDouble(df.format(p).replaceAll(",", "."));
+            List<Node> list = erdosrenyi(2000, p);
+            pointsMap.put(d, getGiantComponentList(list).size());
+        }
+        return pointsMap;
+    }
+
+    public static void barabasi(Canvas canvas, final int n, final int m0, final int m) {
 
         final Graphics g = canvas.getGraphics();
         g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         final List<Node> list = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < m0; i++) {
             list.add(Node.builder()
                     .x((int) Math.round(Math.random() * 1000))
                     .y((int) Math.round(Math.random() * 800))
                     .ID(i)
-                    .degree(0)
                     .connectedTo(new ArrayList<Node>()).build());
 
         }
 
         for (int i = 0; i < list.size(); i++) {
-            List<Node> auxList = new ArrayList<>();
-            auxList.addAll(list);
-            while (list.size() - auxList.size() < App.maxNumberOfConnections) {
-                int current = (int) Math.round(Math.random() * (auxList.size() - 1));
-                if (current != i) {
-                    Node nn = auxList.get(current);
-                    Random r = new java.util.Random();
-                    double prob = r.nextDouble();
-                    if (prob <= 0.5) {
-                        list.get(i).getConnectedTo().add(list.get(nn.getID()));
-                        list.get(nn.getID()).getConnectedTo().add(list.get(i));
-
-                        list.get(i).setDegree(list.get(i).getDegree() + 1);
-                        list.get(nn.getID()).setDegree(list.get(nn.getID()).getDegree() + 1);
-
-                        auxList.remove(current);
-                    }
+            for (int j = 0; j < list.size(); j++) {
+                if (i != j) {
+                    list.get(i).getConnectedTo().add(list.get(j));
+                    list.get(j).getConnectedTo().add(list.get(i));
                 }
-
             }
-
         }
 
         for (Node node : list) {
@@ -231,26 +466,23 @@ public class App {
 
         new Thread() {
             public void run() {
-                while (true) {
+                while (list.size() < n) {
                     Node currentNode = Node.builder()
                             .x((int) Math.round(Math.random() * 1000))
                             .y((int) Math.round(Math.random() * 800))
                             .ID(list.size())
                             .connectedTo(new ArrayList<Node>())
                             .build();
-                    while (currentNode.getConnectedTo().size() < App.maxNumberOfConnections) {
+                    while (currentNode.getConnectedTo().size() < m) {
                         int current = (int) Math.round(Math.random() * (list.size() - 1));
                         Node nn = list.get(current);
-                        if (Math.random() <= (double) nn.getDegree() / list.size() * 2) {
+                        if (Math.random() <= (double) nn.getConnectedTo().size() / list.size() * 2) {
                             currentNode.getConnectedTo().add(list.get(nn.getID()));
-
                             nn.getConnectedTo().add(currentNode);
-                            nn.setDegree(nn.getDegree() + 1);
                         }
                     }
 
                     list.add(currentNode);
-                    currentNode.setDegree(2);
                     for (Node node : list) {
                         g.setColor(new Color(
                                 (int) Math.random() * 255,
@@ -279,6 +511,48 @@ public class App {
             }
         }.start();
 
+    }
+
+    public static List<Node> barabasi(int n, int m0, int m) {
+        System.out.println(n + " _ " + m0 + " _ " + m);
+        List<Node> list = new ArrayList<>();
+        for (int i = 0; i < m0; i++) {
+            list.add(Node.builder()
+                    .ID(i)
+                    .connectedTo(new ArrayList<Node>()).build());
+        }
+
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = 0; j < list.size(); j++) {
+                if (i != j) {
+                    list.get(i).getConnectedTo().add(list.get(j));
+                    list.get(j).getConnectedTo().add(list.get(i));
+                }
+            }
+        }
+
+        while (list.size() < n) {
+            Node currentNode = Node.builder()
+                    .ID(list.size())
+                    .connectedTo(new ArrayList<Node>())
+                    .build();
+            while (currentNode.getConnectedTo().size() < m) {
+                int current = (int) Math.round(Math.random() * (list.size() - 1));
+                Node nn = list.get(current);
+                double p = Math.random();
+
+                double threshold = (double) nn.getConnectedTo().size() / (((list.size() - m0) * m) + (m0 * (m0 - 1)));
+                if (p <= threshold) {
+                    currentNode.getConnectedTo().add(list.get(nn.getID()));
+                    nn.getConnectedTo().add(currentNode);
+                }
+            }
+
+            list.add(currentNode);
+
+        }
+
+        return list;
     }
 
 }
