@@ -66,7 +66,8 @@ public class App {
 
         JMenuItem menuItem3;
         JMenuItem menuItem4;
-
+        JMenuItem menuItem34;
+        JMenuItem menuItem43;
         // Create the menu bar.
         menuBar = new JMenuBar();
 
@@ -144,7 +145,7 @@ public class App {
                                 return 0;
 
                             }
-                        });
+                        }, 0.0001, 0.005, 0.0, 2000.0);
                     }
                 });
             }
@@ -193,6 +194,76 @@ public class App {
             }
         });
         menu.add(menuItem4);
+
+        menuItem34 = new JMenuItem("Plot the degree distribution n=2000, m0=3, m=1",
+                KeyEvent.VK_T);
+              
+        menuItem34.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<Node> list = barabasi(2000, 3, 1);
+                        final Map<Integer, Integer> map = getCumulativeDistrib(list);
+                        
+                        //System.out.println(map);
+                        SimplePlotMain.createAndShowGUI(new Function() {
+                            @Override
+                            public double compute(double argument) {
+                                int key = (int) Math.pow(10, (argument));
+                                Integer value = map.get(key);
+                                //System.out.print(key + "/" + value + "  ");
+                                if (value != null) {
+
+                                    return Math.log10(value);
+                                }
+
+                                return 0;
+
+                            }
+                        }, 0, Math.log10(map.size()), 0, Math.log10(list.size() + 1));
+                    }
+                });
+            }
+        });
+        menu.add(menuItem34);
+
+
+
+
+        menuItem43 = new JMenuItem("Plot the degree distribution n=2000, m0=5, m=2",
+                KeyEvent.VK_T);
+
+        menuItem43.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<Node> list = barabasi(2000, 5, 2);
+                        final Map<Integer, Integer> map = getCumulativeDistrib(list);
+
+                        // System.out.println(map);
+                        SimplePlotMain.createAndShowGUI(new Function() {
+                            @Override
+                            public double compute(double argument) {
+                                int key = (int) Math.pow(10, (argument));
+                                Integer value = map.get(key);
+                                // System.out.print(key + "/" + value + " ");
+                                if (value != null) {
+
+                                    return Math.log10(value);
+                                }
+
+                                return 0;
+
+                            }
+                        }, 0, Math.log10(map.size()), 0, Math.log10(list.size() + 1));
+                    }
+                });
+            }
+        });
+        menu.add(menuItem43);
+
         // --
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -419,6 +490,32 @@ public class App {
             List<Node> list = erdosrenyi(2000, p);
             pointsMap.put(d, getGiantComponentList(list).size());
         }
+        return pointsMap;
+    }
+
+    public static Map<Integer, Integer> getCumulativeDistrib(List<Node> list) {
+        Map<Integer, Integer> pointsMap = new TreeMap<>();
+        int maxDegree = 0;
+
+        for (Node node : list) {
+            if (node.getConnectedTo().size() > maxDegree)
+                maxDegree = node.getConnectedTo().size();
+        }
+
+        for (int i = maxDegree; i >= 0; i--) {
+            int count = 0;
+            for (Node node : list) {
+                if (node.getConnectedTo().size() == i) {
+                    count++;
+                }
+            }
+            if (pointsMap.containsKey(i + 1)) {
+                count += pointsMap.get(i + 1);
+            }
+            pointsMap.put(i, count);
+
+        }
+
         return pointsMap;
     }
 

@@ -46,7 +46,7 @@ public class SimplePlotMain {
     /**
      * Creates the frame containing the simple plotter
      */
-    public static void createAndShowGUI(Function function) {
+    public static void createAndShowGUI(Function function, double minX, double maxX, double minY, double maxY) {
         // Create the main frame
         JFrame frame = new JFrame("SimplePlot");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -60,7 +60,7 @@ public class SimplePlotMain {
         plotPanel.setFunction(function);
 
         // Create a simple control panel and add it to the frame
-        JComponent controlPanel = createControlPanel(plotPanel);
+        JComponent controlPanel = createControlPanel(plotPanel, minX, maxX, minY, maxY);
         frame.getContentPane().add(controlPanel, BorderLayout.EAST);
 
         // As the last action: Make the frame visible
@@ -76,7 +76,7 @@ public class SimplePlotMain {
      * @return The control-panel
      */
     private static JComponent createControlPanel(
-            final SimplePlotPanel plotPanel) {
+            final SimplePlotPanel plotPanel, double minX, double maxX, double minY, double maxY) {
         JPanel controlPanel = new JPanel(new BorderLayout());
         JPanel panel = new JPanel(new GridLayout(0, 2));
         controlPanel.add(panel, BorderLayout.NORTH);
@@ -121,10 +121,10 @@ public class SimplePlotMain {
         maxYSpinner.addChangeListener(changeListener);
 
         // Set some default values for the Spinners
-        minXSpinner.setValue(0.0001);
-        maxXSpinner.setValue(0.005);
-        minYSpinner.setValue(0.0);
-        maxYSpinner.setValue(2000.0);
+        minXSpinner.setValue(minX);
+        maxXSpinner.setValue(maxX);
+        minYSpinner.setValue(minY);
+        maxYSpinner.setValue(maxY);
 
         return controlPanel;
     }
