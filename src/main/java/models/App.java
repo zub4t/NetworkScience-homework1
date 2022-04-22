@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 class Pair {
 
@@ -130,19 +131,23 @@ public class App {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        SimplePlotPanel.barabasi = false;
+                        SimplePlotPanel.size = 10;
 
                         SimplePlotMain.createAndShowGUI(new Function() {
                             @Override
                             public double compute(double argument) {
                                 double d = Double.parseDouble(df.format(argument).replaceAll(",", "."));
-                                System.out.println(d);
+                                // System.out.println(d);
 
                                 Integer value = map.get(d);
+
                                 if (value != null) {
+
                                     return value;
                                 }
 
-                                return 0;
+                                return -100;
 
                             }
                         }, 0.0001, 0.005, 0.0, 2000.0);
@@ -197,7 +202,7 @@ public class App {
 
         menuItem34 = new JMenuItem("Plot the degree distribution n=2000, m0=3, m=1",
                 KeyEvent.VK_T);
-              
+
         menuItem34.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -205,14 +210,15 @@ public class App {
                     public void run() {
                         List<Node> list = barabasi(2000, 3, 1);
                         final Map<Integer, Integer> map = getCumulativeDistrib(list);
-                        
-                        //System.out.println(map);
+                        SimplePlotPanel.barabasi = true;
+                        SimplePlotPanel.size = 10;
+                        //// System.out.println(map);
                         SimplePlotMain.createAndShowGUI(new Function() {
                             @Override
                             public double compute(double argument) {
                                 int key = (int) Math.pow(10, (argument));
                                 Integer value = map.get(key);
-                                //System.out.print(key + "/" + value + "  ");
+                                ////// System.out.print(key + "/" + value + " ");
                                 if (value != null) {
 
                                     return Math.log10(value);
@@ -228,9 +234,6 @@ public class App {
         });
         menu.add(menuItem34);
 
-
-
-
         menuItem43 = new JMenuItem("Plot the degree distribution n=2000, m0=5, m=2",
                 KeyEvent.VK_T);
 
@@ -242,13 +245,13 @@ public class App {
                         List<Node> list = barabasi(2000, 5, 2);
                         final Map<Integer, Integer> map = getCumulativeDistrib(list);
 
-                        // System.out.println(map);
+                        // //System.out.println(map);
                         SimplePlotMain.createAndShowGUI(new Function() {
                             @Override
                             public double compute(double argument) {
                                 int key = (int) Math.pow(10, (argument));
                                 Integer value = map.get(key);
-                                // System.out.print(key + "/" + value + " ");
+                                // ////System.out.print(key + "/" + value + " ");
                                 if (value != null) {
 
                                     return Math.log10(value);
@@ -343,7 +346,7 @@ public class App {
     }
 
     public static String writeConnections(int n, List<Node> list) {
-        System.out.println("start writeConnections:" + n);
+        // System.out.println("start writeConnections:" + n);
 
         String out = n + "\n";
         HashSet<Pair> connections = new HashSet<>();
@@ -352,13 +355,14 @@ public class App {
                 connections.add(new Pair(node.getID(), connected.getID()));
             }
         }
-        System.out.println("middle writeConnections\nconnections size" + connections.size());
+        // System.out.println("middle writeConnections\nconnections size" +
+        // connections.size());
 
         for (Pair p : connections) {
             out += (p.x + " " + p.y + "\n");
         }
 
-        System.out.println("end writeConnections:" + n);
+        // System.out.println("end writeConnections:" + n);
 
         return out;
     }
@@ -461,7 +465,7 @@ public class App {
     }
 
     public static List<Node> erdosrenyi(int n, double p) {
-        System.out.println("end erdosrenyi:" + n);
+        // System.out.println("end erdosrenyi:" + n);
         List<Node> list = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             list.add(Node.builder()
@@ -479,7 +483,7 @@ public class App {
                 }
             }
         }
-        System.out.println("end erdosrenyi:" + n);
+        // System.out.println("end erdosrenyi:" + n);
         return list;
     }
 
@@ -611,7 +615,7 @@ public class App {
     }
 
     public static List<Node> barabasi(int n, int m0, int m) {
-        System.out.println(n + " _ " + m0 + " _ " + m);
+        // System.out.println(n + " _ " + m0 + " _ " + m);
         List<Node> list = new ArrayList<>();
         for (int i = 0; i < m0; i++) {
             list.add(Node.builder()
