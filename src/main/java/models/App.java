@@ -8,7 +8,6 @@ import java.awt.event.*;
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.awt.*;
 import nodes.Node;
@@ -19,34 +18,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
-
-class Pair {
-
-    // Pair attributes
-    public Number x;
-    public Number y;
-
-    // Constructor to initialize pair
-    public Pair(Number x, Number y) {
-        // This keyword refers to current instance
-        this.x = x;
-        this.y = y;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Pair) {
-            return (this.x == ((Pair) obj).x && this.y == ((Pair) obj).y)
-                    || (this.x == ((Pair) obj).y && this.y == ((Pair) obj).x);
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return this.x.intValue() * this.y.intValue();
-    }
-}
+import java.util.TreeSet;
 
 public class App {
     static double prob = Integer.MAX_VALUE;
@@ -141,7 +113,7 @@ public class App {
                             @Override
                             public double compute(double argument) {
                                 double d = Double.parseDouble(df.format(argument).replaceAll(",", "."));
-                                // System.out.println(d);
+                                // //System.out.println(d);
 
                                 Integer value = map.get(d);
 
@@ -192,8 +164,10 @@ public class App {
             public void actionPerformed(ActionEvent ev) {
                 FileOutputStream fos;
                 try {
+                    List<Node> list = barabasi(2000, 5, 2);
                     fos = new FileOutputStream("ba2.txt", false);
-                    fos.write(writeConnections(2000, barabasi(2000, 5, 2)).getBytes()); // writes bytes into file
+
+                    fos.write(writeConnections(2000, list).getBytes()); // writes bytes into file
                     fos.close();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -219,18 +193,15 @@ public class App {
                         App.m0 = 3;
                         SimplePlotPanel.barabasi = true;
                         SimplePlotPanel.size = 10;
-                        //// System.out.println(map);
                         SimplePlotMain.createAndShowGUI(new Function() {
                             @Override
                             public double compute(double argument) {
                                 int key = (int) Math.pow(10, (argument));
                                 Integer value = map.get(key);
-                                ////// System.out.print(key + "/" + value + " ");
                                 if (value != null) {
 
                                     return Math.log10(value);
                                 }
-
                                 return 0;
 
                             }
@@ -246,7 +217,7 @@ public class App {
                                 JOptionPane.showMessageDialog(null,
                                         "The Alpha accordingly with the slide Maximum likelihood fitting is "
                                                 + SimplePlotPanel.trueAlpha,
-                                        "GiantComponent", JOptionPane.PLAIN_MESSAGE);
+                                        "Maximum likelihood fitting – best", JOptionPane.PLAIN_MESSAGE);
                             }
                         }.start();
 
@@ -298,7 +269,7 @@ public class App {
                                 JOptionPane.showMessageDialog(null,
                                         "The Alpha accordingly with the slide Maximum likelihood fitting is "
                                                 + SimplePlotPanel.trueAlpha,
-                                        "GiantComponent", JOptionPane.PLAIN_MESSAGE);
+                                        "Maximum likelihood fitting – best", JOptionPane.PLAIN_MESSAGE);
                             }
                         }.start();
                     }
@@ -386,23 +357,18 @@ public class App {
     }
 
     public static String writeConnections(int n, List<Node> list) {
-        // System.out.println("start writeConnections:" + n);
-
-        String out = n + "\n";
-        HashSet<Pair> connections = new HashSet<>();
+        Set<String> map = new TreeSet<>();
+        String out = list.size() + "\n";
         for (Node node : list) {
             for (Node connected : node.getConnectedTo()) {
-                connections.add(new Pair(node.getID(), connected.getID()));
+                if (!map.contains(connected.getID() + "-" + node.getID())) {
+                    out += node.getID() + " " + connected.getID() + "\n";
+                    map.add(connected.getID() + "-" + node.getID());
+                    map.add(node.getID() + "-" + connected.getID());
+                }
+
             }
         }
-        // System.out.println("middle writeConnections\nconnections size" +
-        // connections.size());
-
-        for (Pair p : connections) {
-            out += (p.x + " " + p.y + "\n");
-        }
-
-        // System.out.println("end writeConnections:" + n);
 
         return out;
     }
@@ -431,7 +397,7 @@ public class App {
                     .x((int) Math.round(Math.random() * 1000))
                     .y((int) Math.round(Math.random() * 800))
                     .ID(i)
-                    .connectedTo(new ArrayList<Node>()).build());
+                    .connectedTo(new TreeSet<Node>()).build());
 
         }
         double probSliderValue = probabilitySlider.getValue() / App.prob;
@@ -505,12 +471,12 @@ public class App {
     }
 
     public static List<Node> erdosrenyi(int n, double p) {
-        // System.out.println("end erdosrenyi:" + n);
+        // //System.out.println("end erdosrenyi:" + n);
         List<Node> list = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             list.add(Node.builder()
                     .ID(i)
-                    .connectedTo(new ArrayList<Node>()).build());
+                    .connectedTo(new TreeSet<Node>()).build());
 
         }
         for (int i = 0; i < list.size(); i++) {
@@ -523,7 +489,7 @@ public class App {
                 }
             }
         }
-        // System.out.println("end erdosrenyi:" + n);
+        // //System.out.println("end erdosrenyi:" + n);
         return list;
     }
 
@@ -542,19 +508,20 @@ public class App {
         int maxDegree = 0;
 
         for (Node node : list) {
-            if (node.getConnectedTo().size() > maxDegree)
+
+            if (node.getConnectedTo().size() > maxDegree) {
                 maxDegree = node.getConnectedTo().size();
+
+            }
+
         }
 
-        for (int i = maxDegree; i >= 0; i--) {
+        for (int i = maxDegree; i > 0; i--) {
             int count = 0;
             for (Node node : list) {
-                if (node.getConnectedTo().size() == i) {
+                if (node.getConnectedTo().size() >= i) {
                     count++;
                 }
-            }
-            if (pointsMap.containsKey(i + 1)) {
-                count += pointsMap.get(i + 1);
             }
             pointsMap.put(i, count);
 
@@ -655,12 +622,11 @@ public class App {
     }
 
     public static List<Node> barabasi(int n, int m0, int m) {
-        // System.out.println(n + " _ " + m0 + " _ " + m);
         List<Node> list = new ArrayList<>();
         for (int i = 0; i < m0; i++) {
             list.add(Node.builder()
                     .ID(i)
-                    .connectedTo(new ArrayList<Node>()).build());
+                    .connectedTo(new TreeSet<Node>()).build());
         }
 
         for (int i = 0; i < list.size(); i++) {
@@ -675,18 +641,20 @@ public class App {
         while (list.size() < n) {
             Node currentNode = Node.builder()
                     .ID(list.size())
-                    .connectedTo(new ArrayList<Node>())
-                    .build();
+                    .connectedTo(new TreeSet<Node>()).build();
+
             while (currentNode.getConnectedTo().size() < m) {
                 int current = (int) Math.round(Math.random() * (list.size() - 1));
                 Node nn = list.get(current);
                 double p = Math.random();
 
-                double threshold = (double) nn.getConnectedTo().size() / (((list.size() - m0) * m) + (m0 * (m0 - 1)));
+                double threshold = (double) nn.getConnectedTo().size()
+                        / (((list.size() - m0) * m) + (m0 * (m0 - 1)));
                 if (p <= threshold) {
                     currentNode.getConnectedTo().add(list.get(nn.getID()));
                     nn.getConnectedTo().add(currentNode);
                 }
+
             }
 
             list.add(currentNode);

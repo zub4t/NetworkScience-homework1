@@ -162,7 +162,7 @@ interface Function {
  */
 class SimplePlotPanel extends JPanel {
     public static boolean barabasi = false;
-     public static double trueAlpha = 0.0;
+    public static double trueAlpha = 0.0;
     public static int size = 10;
     public static int n = 2000;
     public static double alpha = 2.5;
@@ -303,13 +303,12 @@ class SimplePlotPanel extends JPanel {
      */
     private void paintFunction(Graphics2D g) {
 
-
         for (int i = 1; i < App.currentMap.size(); i++) {
             trueAlpha += Math.log(App.currentMap.get(i) / App.m);
         }
-        trueAlpha = (App.currentMap.size()/ trueAlpha) + 1;
+        System.out.println("mapa" + App.currentMap);
+        trueAlpha = (App.currentMap.size() / trueAlpha) + 1;
 
-      
         int previousScreenX = 0;
         double previousFunctionX = toFunctionX(previousScreenX);
         double previousFunctionY = function.compute(previousFunctionX);

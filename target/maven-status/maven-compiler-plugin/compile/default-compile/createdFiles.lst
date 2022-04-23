@@ -11,6 +11,7 @@ models\SimplePlotMain$2.class
 models\App$6$1$1.class
 models\App$2.class
 models\App$5.class
+models\App$7$1$2.class
 models\App$3$1$1.class
 models\App$4.class
 models\App$9.class
@@ -18,6 +19,7 @@ models\App$11.class
 nodes\Node.class
 models\SimplePlotMain.class
 models\SimplePlotPanel.class
+models\App$6$1$2.class
 models\App$7$1.class
 models\App$7$1$1.class
 models\SimplePlotMain$SimplePlotMainBuilder.class

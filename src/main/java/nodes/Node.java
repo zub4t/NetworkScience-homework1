@@ -1,7 +1,7 @@
 package nodes;
 
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.Set;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import lombok.Setter;
 @Builder
 public class Node implements Comparable<Node> {
     Integer ID;
-    List<Node> connectedTo = new ArrayList<>();
+    Set<Node> connectedTo = null;
 
     int x;
     int y;
@@ -20,6 +20,16 @@ public class Node implements Comparable<Node> {
     @Override
     public int compareTo(Node o) {
         return this.ID.compareTo(o.getID());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Node) {
+            Node nn = (Node) o;
+            return this.ID.equals(nn.getID());
+        }
+
+        return false;
     }
 
 }
