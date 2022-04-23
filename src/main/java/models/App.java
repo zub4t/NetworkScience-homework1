@@ -103,6 +103,7 @@ public class App {
         menuItem12.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 final Map<Double, Integer> map = getGiantComponentPoints();
+
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -498,7 +499,13 @@ public class App {
         for (double p = 0.0001; p <= 0.005; p += 0.0001) {
             double d = Double.parseDouble(df.format(p).replaceAll(",", "."));
             List<Node> list = erdosrenyi(2000, p);
-            pointsMap.put(d, getGiantComponentList(list).size());
+            double sum = 0;
+            for (Node nn : list) {
+                sum += nn.getConnectedTo().size() / 1999.0;
+            }
+            Set<Node> giant = getGiantComponentList(list);
+            System.out.println("at prob: " + d + " -> average dregree " + sum + " -> " + giant.size());
+            pointsMap.put(d,giant.size());
         }
         return pointsMap;
     }
@@ -540,7 +547,7 @@ public class App {
                     .x((int) Math.round(Math.random() * 1000))
                     .y((int) Math.round(Math.random() * 800))
                     .ID(i)
-                    .connectedTo(new ArrayList<Node>()).build());
+                    .connectedTo(new TreeSet<Node>()).build());
 
         }
 
@@ -579,8 +586,8 @@ public class App {
                             .x((int) Math.round(Math.random() * 1000))
                             .y((int) Math.round(Math.random() * 800))
                             .ID(list.size())
-                            .connectedTo(new ArrayList<Node>())
-                            .build();
+                            .connectedTo(new TreeSet<Node>()).build();
+
                     while (currentNode.getConnectedTo().size() < m) {
                         int current = (int) Math.round(Math.random() * (list.size() - 1));
                         Node nn = list.get(current);
