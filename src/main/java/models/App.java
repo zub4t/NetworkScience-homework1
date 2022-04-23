@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 class Pair {
 
@@ -53,6 +52,9 @@ public class App {
     static double prob = Integer.MAX_VALUE;
     static int maxNumberOfConnections = 2;
     final static DecimalFormat df = new DecimalFormat("0.0000");
+    final static Map<Integer, Integer> currentMap = new TreeMap<>();
+    static int m = 0;
+    static int m0 = 0;
 
     public static void main(String[] args) {
         final Canvas canvas = new Canvas();
@@ -104,6 +106,7 @@ public class App {
                 KeyEvent.VK_T);
         menuItem2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
+
                 FileOutputStream fos;
                 try {
 
@@ -208,8 +211,12 @@ public class App {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        List<Node> list = barabasi(2000, 3, 1);
+                        List<Node> list = barabasi(SimplePlotPanel.n, 3, 1);
                         final Map<Integer, Integer> map = getCumulativeDistrib(list);
+                        App.currentMap.clear();
+                        App.currentMap.putAll(map);
+                        App.m = 1;
+                        App.m0 = 3;
                         SimplePlotPanel.barabasi = true;
                         SimplePlotPanel.size = 10;
                         //// System.out.println(map);
@@ -228,6 +235,21 @@ public class App {
 
                             }
                         }, 0, Math.log10(map.size()), 0, Math.log10(list.size() + 1));
+
+                        new Thread() {
+                            public void run() {
+                                try {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                JOptionPane.showMessageDialog(null,
+                                        "The Alpha accordingly with the slide Maximum likelihood fitting is "
+                                                + SimplePlotPanel.trueAlpha,
+                                        "GiantComponent", JOptionPane.PLAIN_MESSAGE);
+                            }
+                        }.start();
+
                     }
                 });
             }
@@ -242,16 +264,21 @@ public class App {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        List<Node> list = barabasi(2000, 5, 2);
-                        final Map<Integer, Integer> map = getCumulativeDistrib(list);
+                        List<Node> list = barabasi(SimplePlotPanel.n, 5, 2);
 
-                        // //System.out.println(map);
+                        final Map<Integer, Integer> map = getCumulativeDistrib(list);
+                        currentMap.clear();
+                        currentMap.putAll(map);
+                        App.m = 1;
+                        App.m0 = 3;
+                        SimplePlotPanel.barabasi = true;
+                        SimplePlotPanel.size = 10;
+
                         SimplePlotMain.createAndShowGUI(new Function() {
                             @Override
                             public double compute(double argument) {
                                 int key = (int) Math.pow(10, (argument));
                                 Integer value = map.get(key);
-                                // ////System.out.print(key + "/" + value + " ");
                                 if (value != null) {
 
                                     return Math.log10(value);
@@ -261,6 +288,19 @@ public class App {
 
                             }
                         }, 0, Math.log10(map.size()), 0, Math.log10(list.size() + 1));
+                        new Thread() {
+                            public void run() {
+                                try {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                JOptionPane.showMessageDialog(null,
+                                        "The Alpha accordingly with the slide Maximum likelihood fitting is "
+                                                + SimplePlotPanel.trueAlpha,
+                                        "GiantComponent", JOptionPane.PLAIN_MESSAGE);
+                            }
+                        }.start();
                     }
                 });
             }

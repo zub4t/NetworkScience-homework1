@@ -10,6 +10,7 @@ import java.awt.RenderingHints;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
@@ -94,7 +95,8 @@ public class SimplePlotMain {
 
         final JSpinner alphaSpinner = new JSpinner(
                 new SpinnerNumberModel(SimplePlotPanel.alpha, 1, 3, 0.1));
-
+        final JSpinner nSpinner = new JSpinner(
+                new SpinnerNumberModel(SimplePlotPanel.n, 2000, 60000, 10));
         // Add the spinners and some labels to the panel
         panel.add(new JLabel("minX"));
         panel.add(minXSpinner);
@@ -106,7 +108,8 @@ public class SimplePlotMain {
         panel.add(maxYSpinner);
         panel.add(new JLabel("α"));
         panel.add(alphaSpinner);
-
+        panel.add(new JLabel("Number of nodes"));
+        panel.add(nSpinner);
         // Create a ChangeListener that will be added to all spinners,
         // and which transfers the settings to the SimplePlotPanel
         ChangeListener changeListener = new ChangeListener() {
@@ -117,6 +120,8 @@ public class SimplePlotMain {
                 double minY = ((Double) minYSpinner.getValue()).doubleValue();
                 double maxY = ((Double) maxYSpinner.getValue()).doubleValue();
                 SimplePlotPanel.alpha = ((Double) alphaSpinner.getValue()).doubleValue();
+                SimplePlotPanel.n = ((Integer) nSpinner.getValue());
+
                 plotPanel.setRangeX(minX, maxX);
                 plotPanel.setRangeY(minY, maxY);
             }
@@ -126,6 +131,7 @@ public class SimplePlotMain {
         minYSpinner.addChangeListener(changeListener);
         maxYSpinner.addChangeListener(changeListener);
         alphaSpinner.addChangeListener(changeListener);
+        nSpinner.addChangeListener(changeListener);
 
         // Set some default values for the Spinners
         minXSpinner.setValue(minX);
@@ -156,7 +162,9 @@ interface Function {
  */
 class SimplePlotPanel extends JPanel {
     public static boolean barabasi = false;
+     public static double trueAlpha = 0.0;
     public static int size = 10;
+    public static int n = 2000;
     public static double alpha = 2.5;
 
     private static final long serialVersionUID = -6588061082489436970L;
@@ -295,13 +303,17 @@ class SimplePlotPanel extends JPanel {
      */
     private void paintFunction(Graphics2D g) {
 
+
+        for (int i = 1; i < App.currentMap.size(); i++) {
+            trueAlpha += Math.log(App.currentMap.get(i) / App.m);
+        }
+        trueAlpha = (App.currentMap.size()/ trueAlpha) + 1;
+
+      
         int previousScreenX = 0;
         double previousFunctionX = toFunctionX(previousScreenX);
         double previousFunctionY = function.compute(previousFunctionX);
         int previousScreenY = toScreenY(previousFunctionY);
-
-        int previousScreenYY = toScreenY(previousFunctionY);
-        int previousScreenXX = 2000;
 
         int previuousBrabasi = -1;
         double previuousErdos = -1;
@@ -315,7 +327,6 @@ class SimplePlotPanel extends JPanel {
 
                 if (SimplePlotPanel.barabasi || (functionY != previuousErdos && !SimplePlotPanel.barabasi)) {
                     int screenY = toScreenY(functionY);
-
                     g.drawArc(screenX, screenY, SimplePlotPanel.size, SimplePlotPanel.size, 0, 360);
                     previousScreenX = screenX;
                     previousScreenY = screenY;
@@ -324,17 +335,27 @@ class SimplePlotPanel extends JPanel {
             }
             if (SimplePlotPanel.barabasi) {
                 if (screenX > 1) {
-
-                    g.setColor(Color.red);
-                    double y = 2000 * Math.pow(new Double(Math.pow(10, (toFunctionX(screenX - 1)))), -1 * alpha);
-                    double yy = 2000 * Math.pow(new Double(Math.pow(10, (toFunctionX(screenX)))), -1 * alpha);
+                    g.setColor(Color.RED);
+                    double y = SimplePlotPanel.n
+                            * Math.pow(new Double(Math.pow(10, (toFunctionX(screenX - 1)))), -1 * alpha);
+                    double yy = SimplePlotPanel.n
+                            * Math.pow(new Double(Math.pow(10, (toFunctionX(screenX)))), -1 * alpha);
                     // System.out.ln((Math.log10(y)) + " " + (Math.log10(yy)));
                     g.drawLine(screenX - 1, toScreenY(Math.log10(y)), screenX, toScreenY(Math.log10(yy)));
+
+                    g.setColor(Color.GREEN);
+                    y = SimplePlotPanel.n
+                            * Math.pow(new Double(Math.pow(10, (toFunctionX(screenX - 1)))), -1 * trueAlpha);
+                    yy = SimplePlotPanel.n
+                            * Math.pow(new Double(Math.pow(10, (toFunctionX(screenX)))), -1 * trueAlpha);
+                    // System.out.ln((Math.log10(y)) + " " + (Math.log10(yy)));
+                    g.drawLine(screenX - 1, toScreenY(Math.log10(y)), screenX, toScreenY(Math.log10(yy)));
+
                 }
 
             }
             previuousBrabasi = (int) Math.pow(10, (functionX));
-           
+
         }
     }
 
