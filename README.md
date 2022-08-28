@@ -1,4 +1,13 @@
 # NetworkScience-homework1
+In order to generate an executable, type
+```
+
+  mvn clean
+  mvn install
+  mvn package
+
+``` 
+
 
 
 
